@@ -1,0 +1,151 @@
+CREATE database BookProject;
+
+USE BookProject; 
+
+CREATE TABLE books (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		title VARCHAR(100),
+		author_fname VARCHAR(100),
+		author_lname VARCHAR(100),
+		publication_year YEAR,
+        pages INT,
+        series VARCHAR(100),
+        category VARCHAR(100),
+		sub_plot VARCHAR(100)
+	);
+    
+CREATE TABLE reviews (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		rating DECIMAL(2,1),
+		goodreads_avg DECIMAL(2,1),
+        recommended_by VARCHAR(100),
+        books_id INT,
+		FOREIGN KEY(books_id) REFERENCES books(id)
+);
+
+
+INSERT INTO books (title, author_fname, author_lname, publication_year, pages, series, category, sub_plot)
+VALUES
+('We Were Never Here', 'Andrea', 'Bartz', 2021, 320, 'No', 'Thriller', 'Mystery'),
+('Where The Crawdads Sing', 'Delia', 'Owen', 2018, 368, 'No', 'Literary Fiction', 'Mystery'),
+('The Seven Husbands of Evelyn Hugo', 'Taylor', 'Jenkins Reid', 2017, 400, 'No', 'Historical Fiction', 'Romance'),
+('A Court of Thorns and Roses', 'Sarah', 'Maas', 2015, 447, 'Yes', 'Fantasy', 'Romance'),
+('Red Queen', 'Victoria', 'Aveyard', 2015, 358, 'Yes', 'Fantasy', 'Romance'),
+('Icebreaker', 'Hannah', 'Grace', 2022, 448, 'Yes', 'Romance', 'YA'),
+('The Cruel Prince', 'Holly', 'Black', 2018, 343, 'Yes', 'Fantasy', 'Romance'),
+('The Fine Print', 'Lauren', 'Asher', 2021, 418, 'Yes', 'Romance', 'Adult'),
+('The Love Hypothesis', 'Ali', 'Hazelwood', 2021, 384, 'No', 'Romance', 'Comedy'),
+('One of Us is Lying', 'Karen', 'McManus', 2017, 368, 'Yes', 'Mystery', 'YA'),
+('The Unhoneymooners', 'Christina', 'Lauren', 2019, 244, 'No', 'Romance', 'Comedy'),
+('The Spanish Love Deception', 'Elena', 'Armas', 2021, 448, 'Yes', 'Romance', 'Comedy'),
+('The Soulmate Equation', 'Christian', 'Lauren', 2021, 323, 'No', 'Romance', 'Comedy'),
+('Then She Was Gone', 'Lisa', 'Jewell', 2017, 296, 'No', 'Thriller', 'Mystery'),
+('From Blood and Ash', 'Jennifer', 'Armentrout', 2020, 343, 'Yes', 'Fantasy', 'Romance'),
+('The Duke and I', 'Julia', 'Quinn', 2000, 415, 'Yes', 'Romance', 'Historical Fiction');
+  
+	INSERT INTO reviews (rating, goodreads_avg, recommended_by) 
+  VALUES
+	    	(4.5, 3.5, 'Reeses Book Club'), 
+        (2.0, 4.4, 'Reeses Book Club'),
+        (NULL , 4.3, 'TikTok'),
+        (5.0, 4.2, 'TikTok'),
+        (4.2, 4.0, NULL),
+        (5.0, 4.1, 'TikTok'),
+        (1.5, 4.4, NULL),
+        (2.5, 3.9, 'TikTok'),
+        (5.0, 4.2, 'TikTok'),
+        (4.1, 4.0, 'Netflix'),
+        (5.0, 4.0, 'TikTok'),
+        (3.8, 3.9, 'TikTok'),
+        (4.1, 4.0, NULL),
+        (3.7, 4.1, 'TikTok'),
+        (5.0, 4.3, 'TikTok'),
+        (5.0, 3.8, 'Netflix');
+        
+	SELECT *
+    FROM reviews;
+
+-- Create a new column of authors' first and last names and give them aliases. --
+
+SELECT author_fname AS First, author_lname AS Last,
+  CONCAT(author_fname, ' ',author_lname) AS 'Full Name' 
+   FROM books;
+   
+-- Create a new column to show the genre of the books and give an alias. --
+
+   SELECT category, sub_plot,
+  CONCAT(category, ' ', 'and ', sub_plot) AS 'Genre' 
+   FROM books;
+   
+-- Print a summary containing the title and publication year, for the most 5 recently released books. --
+
+SELECT DISTINCT CONCAT(title, ' - ', publication_year) AS 'Recently Released'
+     FROM books
+     ORDER BY publication_year DESC
+     LIMIT 5;
+     
+	-- Create a view where category is Romance and publication year is greater than 2020. --
+  
+		SELECT title, publication_year, category
+		FROM books 
+		WHERE publication_year > 2020
+		AND category = 'Romance';
+
+-- Create a list of authors next to their last name and the title of their book in one column with an alias and with the same symbol between them. --
+
+	SELECT CONCAT_WS(' - ', title, author_fname,author_lname) AS 'Book Info' 
+		FROM books;
+     
+-- Select each title and the number of characters each title contains. --
+
+	SELECT title, CHAR_LENGTH(title) AS 'Title Length'
+		FROM books;
+    
+-- Shorten the title names of each book to  10 characters, give the results table an alias. Add ... after every short title. --
+
+SELECT CONCAT
+(
+    SUBSTRING(title, 1, 10),
+'...') AS 'Short Title'
+         FROM books;
+
+-- How many books were recommended by TikTok?
+
+	SELECT COUNT(recommended_by) 
+			FROM reviews
+            WHERE recommended_by = 'TikTok';		
+
+-- The rating next to its title in order from lowest to highest. --  
+
+		SELECT title, rating 
+			FROM reviews 
+		JOIN books 
+			ON reviews.id = books.id
+		GROUP BY title
+		ORDER BY rating ASC;
+   
+-- Find the unrated books in the database. --
+
+		SELECT title AS Missing_Rating
+			FROM reviews
+		LEFT JOIN books
+			ON reviews.id = books.id
+			WHERE rating IS NULL;
+    
+-- The average rating of books based on primary genre category and ordered by average rating from highest to lowest -- 
+
+	SELECT DISTINCT ROUND(AVG(rating), 2) AS AVG_rating, category
+		FROM books
+	INNER JOIN reviews 
+		ON books.id = reviews.id
+   GROUP BY category
+   HAVING AVG_rating IS NOT NULL
+   ORDER BY AVG_rating DESC;
+
+-- Change null values in ratings to say unrated -- 
+
+SELECT 
+	title, IFNULL(rating, 'UNRATED') AS 'Full Rating'
+FROM reviews
+INNER JOIN books 
+		ON reviews.id = books.id;
