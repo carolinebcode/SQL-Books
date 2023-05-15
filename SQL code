@@ -88,9 +88,9 @@ VALUES
     (7.99, 250, 225),
     (8.99, 550, 459);     
     
--- Select all from books table
+-- Select all from reviews table
     SELECT *
-    FROM books;
+    FROM reviews;
 
 -- Create a new column of authors' first and last names and give them aliases. --
 SELECT author_fname AS First, author_lname AS Last,
@@ -189,3 +189,20 @@ JOIN books
 			ON orders.id = books.id 
 		GROUP BY title 
 		ORDER BY sales_12m ASC;
+
+--A record has been entered incorrectly in the books table - change this to the correct record
+UPDATE books
+SET 
+title = 'Happy Place', 
+author_fname = 'Emily',
+author_lname = 'Henry',
+publication_year = 2023,
+pages = 420,
+series = 'No',
+category = 'Romance',
+sub_plot = NULL
+WHERE id = 16;
+
+--check the record has been updated correctly
+    SELECT *
+    FROM books;
